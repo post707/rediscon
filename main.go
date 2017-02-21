@@ -41,24 +41,37 @@ func InitRedis(network, address string) redis.Conn {
 }
 func main() {
 	c := InitRedis("tcp", "192.168.1.213:6379")
-	dbkey := "netgame:info"
-	if ok, err := redis.Bool(c.Do("LPUSH", dbkey, "yanetao")); ok {
+	//插入到列表
+	if ok, err := redis.Bool(c.Do("LPUSH", "redlist", "test1")); ok {
 	} else {
 		log.Print(err)
 	}
-	fmt.Println("push sucessful ")
+	fmt.Println("push sucessful o ")
+	//插入到列表
+	if ok, err := redis.Bool(c.Do("LPUSH", "redlist", "test2")); ok {
+	} else {
+		log.Print(err)
+	}
+	fmt.Println("push sucessful T ")
+	//读取列表
+	values, _ := redis.Values(c.Do("lrange", "redlist", "0", "100"))
+	for _, v := range values {
+		fmt.Println(string(v.([]byte)))
+	}
+	//删除
+	if ok, err := redis.Bool(c.Do("del", "redlist")); ok {
+	} else {
+		log.Print(err)
+	}
+	fmt.Println("del list T sucessful")
 
-	values, _ := redis.Values(c.Do("lrange", "netgame:info", "0", "100"))
-	var v1 string
-	redis.Scan(values, &v1)
-	fmt.Println(v1)
-
+	//set键值
 	_, err := c.Do("SET", "name", "red")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-
+	//get键值
 	v, err := redis.String(c.Do("GET", "name"))
 	if err != nil {
 		fmt.Println(err)
